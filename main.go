@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"strconv"
 	"os"
-	"io/ioutil"
 )
 
 func CompactToBig(compact uint32) *big.Int {
@@ -128,27 +127,27 @@ func writeCheckpointsFile(list CheckpointList){
 	}
 	defer file.Close()
 
-	enc := json.NewEncoder(file)
-	enc.Encode(&list)
+	jsonData, err := json.MarshalIndent(list, " ", "	")
 
-	data, err := ioutil.ReadFile("checkpoints.json")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Print(string(data))
+	file.Write(jsonData)
+}
+
+func ShowProgress(newestBlock uint64, currentBlock uint64){
+	blocksLeft := newestBlock - currentBlock
+	fmt.Printf("%d / %d -> blocks left to parse: %d\n", newestBlock, currentBlock, blocksLeft)
 }
 
 func main() {
 
-	currentBlockResp, _:= client().GetBlockCount()
-	currentBlock := int64(currentBlockResp)
-	fmt.Println(currentBlock)
+	newestBlockResp, _:= client().GetBlockCount()
+	newestBlock := uint64(newestBlockResp)
+	fmt.Println(newestBlock)
 
 	var list CheckpointList
 
-	var i int64
-	for i = 2015; i < 5018214; i+=2016 {
-		blockhashResp, _ := client().GetBlockHash(i)
+	var i uint64
+	for i = 2015; i < newestBlock; i+=2016 {
+		blockhashResp, _ := client().GetBlockHash(int64(i))
 		blockhash, _ := json.Marshal(blockhashResp.String())
 
 		resp, _ := client().RawRequest("getblock", []json.RawMessage{blockhash})
@@ -159,6 +158,7 @@ func main() {
 
 		list = append(list, NewCheckpoint(block.Hash, CompactToBig(block.Bits), block.Time))
 		writeCheckpointsFile(list)
+		ShowProgress(newestBlock, i)
 
 	}
 
