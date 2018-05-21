@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"strconv"
 	"os"
+	"io/ioutil"
 )
 
 func CompactToBig(compact uint32) *big.Int {
@@ -68,7 +69,7 @@ type Request struct {
 
 type Block struct {
 	Hash string `json:"hash"`
-	Mediantime uint64 `json:"mediantime"`
+	Time uint64 `json:"time"`
 	Nonce uint64 `json:"nonce"`
 	Bits uint32 `json:"bits,string"`
 }
@@ -106,24 +107,47 @@ func (block *Block) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func writeCheckpointsFile(){
+type Checkpoint []interface{}
+type CheckpointList []Checkpoint
+
+func NewCheckpoint(hash string, target *big.Int, time uint64) Checkpoint {
+	var checkpoint Checkpoint
+
+	checkpoint = append(checkpoint, hash)
+	checkpoint = append(checkpoint, target)
+	checkpoint = append(checkpoint, time)
+
+	return checkpoint
+
+}
+
+func writeCheckpointsFile(list CheckpointList){
 	file, err := os.Create("checkpoints.json")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
 
-	// to do
+	enc := json.NewEncoder(file)
+	enc.Encode(&list)
+
+	data, err := ioutil.ReadFile("checkpoints.json")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Print(string(data))
 }
 
 func main() {
 
 	currentBlockResp, _:= client().GetBlockCount()
 	currentBlock := int64(currentBlockResp)
-	fmt.Println("------------------------")
+	fmt.Println(currentBlock)
+
+	var list CheckpointList
 
 	var i int64
-	for i = 2015; i < currentBlock; i+=2016 {
+	for i = 2015; i < 5018214; i+=2016 {
 		blockhashResp, _ := client().GetBlockHash(i)
 		blockhash, _ := json.Marshal(blockhashResp.String())
 
@@ -133,12 +157,12 @@ func main() {
 			log.Fatal(err)
 		}
 
-
-		fmt.Println(block.Hash)
-		fmt.Println(CompactToBig(block.Bits))
-		fmt.Println(block.Mediantime)
+		list = append(list, NewCheckpoint(block.Hash, CompactToBig(block.Bits), block.Time))
+		writeCheckpointsFile(list)
 
 	}
+
+	defer client().Shutdown()
 }
 
 
