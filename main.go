@@ -10,6 +10,10 @@ import (
 	"os"
 )
 
+const MINERCONFIRMATIONWINDOW uint64 = 2016
+
+// nBits is the target but stored in a compract format.
+// this function converts the nBits to target again
 func CompactToBig(compact uint32) *big.Int {
 	// Extract the mantissa, sign bit, and exponent.
 	mantissa := compact & 0x007fffff
@@ -65,7 +69,6 @@ type Request struct {
 	Body string
 }
 
-
 type Block struct {
 	Hash string `json:"hash"`
 	Time uint64 `json:"time"`
@@ -117,9 +120,9 @@ func NewCheckpoint(hash string, target *big.Int, time uint64) Checkpoint {
 	checkpoint = append(checkpoint, time)
 
 	return checkpoint
-
 }
 
+// write the checkpoints into a checkpoints.json file
 func writeCheckpointsFile(list CheckpointList){
 	file, err := os.Create("checkpoints.json")
 	if err != nil {
@@ -132,6 +135,7 @@ func writeCheckpointsFile(list CheckpointList){
 	file.Write(jsonData)
 }
 
+// show how much blocks are left for the user
 func ShowProgress(newestBlock uint64, currentBlock uint64){
 	blocksLeft := newestBlock - currentBlock
 	fmt.Printf("%d / %d -> blocks left to parse: %d\n", newestBlock, currentBlock, blocksLeft)
@@ -146,7 +150,7 @@ func main() {
 	var list CheckpointList
 
 	var i uint64
-	for i = 2015; i < newestBlock; i+=2016 {
+	for i = MINERCONFIRMATIONWINDOW-1; i < newestBlock; i+=MINERCONFIRMATIONWINDOW {
 		blockhashResp, _ := client().GetBlockHash(int64(i))
 		blockhash, _ := json.Marshal(blockhashResp.String())
 
@@ -161,6 +165,8 @@ func main() {
 		ShowProgress(newestBlock, i)
 
 	}
+
+	fmt.Print("Finished")
 
 	defer client().Shutdown()
 }
