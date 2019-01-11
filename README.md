@@ -49,3 +49,9 @@ server/vps does not need the dependency's. The server/VPS that will run the bina
 does not need to have Golang installed at all.
 
 The machine that will compile does need Golang installed and all dependency's (use dep).
+
+License
+-------
+
+This tool is released under the terms of the MIT license. See [COPYING](COPYING) for more
+information or see https://opensource.org/licenses/MIT.
