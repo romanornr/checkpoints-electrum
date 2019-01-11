@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/btcsuite/btcd/rpcclient"
-	"github.com/romanornr/checkpoints-vialectrum/config"
+	"github.com/romanornr/checkpoints-electrum/config"
 	"log"
 	"math/big"
 	"os"
