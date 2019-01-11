@@ -1,5 +1,10 @@
 # checkpoints-electrum
 
+This tool is written to generate the checkpoints.json file which is used in Electrum for Bitcoin <br>
+and other altcoins with an electrum client.
+
+A checkpoints.json file can be found in electrum clients. For Bitcoin: https://github.com/spesmilo/electrum/blob/a8e6eaa247a7a21cba1d23bf72ae9799cbc0cd73/electrum/checkpoints.json
+
 ##### Minimum Recommended Specifications
 
 - **Go 1.10 or 1.11**
