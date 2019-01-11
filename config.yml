@@ -1,0 +1,5 @@
+# These RPC details need to be changed
+host: "127.0.0.1"
+rpc_port: "5222"
+rpc_username: "via"
+rpc_password: "via"

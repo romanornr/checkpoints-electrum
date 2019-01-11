@@ -1,16 +1,24 @@
 package main
 
 import (
-	"log"
-	"github.com/btcsuite/btcd/rpcclient"
-	"math/big"
-	"fmt"
 	"encoding/json"
-	"strconv"
+	"fmt"
+	"github.com/btcsuite/btcd/rpcclient"
+	"github.com/romanornr/checkpoints-vialectrum/config"
+	"log"
+	"math/big"
 	"os"
+	"strconv"
 )
 
 const MINERCONFIRMATIONWINDOW uint64 = 2016
+
+var c config.Conf
+
+// Read RPC details first in config.yml file
+func init() {
+	c.GetConf()
+}
 
 // nBits is the target but stored in a compract format.
 // this function converts the nBits to target again
@@ -42,13 +50,12 @@ func CompactToBig(compact uint32) *big.Int {
 	return bn
 }
 
-
 func client() *rpcclient.Client {
 	// Connect to local bitcoin/altcoin core RPC server using HTTP POST mode.
 	connCfg := &rpcclient.ConnConfig{
-		Host:         "127.0.0.1:5222",
-		User:         "via",
-		Pass:         "via",
+		Host:         c.Host + ":" + c.RpcPort,
+		User:         c.RpcUsername,
+		Pass:         c.RpcPassword,
 		HTTPPostMode: true, // Viacoin core only supports HTTP POST mode
 		DisableTLS:   true, // Viacoin core does not provide TLS by default
 	}
@@ -70,10 +77,10 @@ type Request struct {
 }
 
 type Block struct {
-	Hash string `json:"hash"`
-	Time uint64 `json:"time"`
+	Hash  string `json:"hash"`
+	Time  uint64 `json:"time"`
 	Nonce uint64 `json:"nonce"`
-	Bits uint32 `json:"bits,string"`
+	Bits  uint32 `json:"bits,string"`
 }
 
 type Hash struct {
@@ -82,7 +89,6 @@ type Hash struct {
 
 var hash Hash
 var block Block
-
 
 func (block *Block) UnmarshalJSON(data []byte) error {
 	type Alias Block
@@ -123,7 +129,7 @@ func NewCheckpoint(hash string, target *big.Int, time uint64) Checkpoint {
 }
 
 // write the checkpoints into a checkpoints.json file
-func writeCheckpointsFile(list CheckpointList){
+func writeCheckpointsFile(list CheckpointList) {
 	file, err := os.Create("checkpoints.json")
 	if err != nil {
 		log.Fatal(err)
@@ -136,21 +142,21 @@ func writeCheckpointsFile(list CheckpointList){
 }
 
 // show how much blocks are left for the user
-func ShowProgress(newestBlock uint64, currentBlock uint64){
+func ShowProgress(newestBlock uint64, currentBlock uint64) {
 	blocksLeft := newestBlock - currentBlock
 	fmt.Printf("%d / %d -> blocks left to parse: %d\n", newestBlock, currentBlock, blocksLeft)
 }
 
 func main() {
 
-	newestBlockResp, _:= client().GetBlockCount()
+	newestBlockResp, _ := client().GetBlockCount()
 	newestBlock := uint64(newestBlockResp)
 	fmt.Println(newestBlock)
 
 	var list CheckpointList
 
 	var i uint64
-	for i = MINERCONFIRMATIONWINDOW-1; i < newestBlock; i+=MINERCONFIRMATIONWINDOW {
+	for i = MINERCONFIRMATIONWINDOW - 1; i < newestBlock; i += MINERCONFIRMATIONWINDOW {
 		blockhashResp, _ := client().GetBlockHash(int64(i))
 		blockhash, _ := json.Marshal(blockhashResp.String())
 
@@ -166,9 +172,7 @@ func main() {
 
 	}
 
-	fmt.Print("Finished")
+	fmt.Printf("Finished !\n checkpoints.json has been saved !\n")
 
 	defer client().Shutdown()
 }
-
-
