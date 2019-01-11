@@ -5,6 +5,8 @@ and other altcoins with an electrum client.
 
 A checkpoints.json file can be found in electrum clients. For Bitcoin: https://github.com/spesmilo/electrum/blob/a8e6eaa247a7a21cba1d23bf72ae9799cbc0cd73/electrum/checkpoints.json
 
+![alt text](https://github.com/romanornr/checkpoints-electrum/blob/master/Screenshot.png?raw=true)
+
 ##### Minimum Recommended Specifications
 
 - **Go 1.10 or 1.11**
@@ -17,7 +19,7 @@ A checkpoints.json file can be found in electrum clients. For Bitcoin: https://g
 #### setup
 ``cd ~/go/src/github.com/``
 
-``git clone git@gitlab.com:romanornr/checkpoints-electrum``
+``https://github.com/romanornr/checkpoints-electrum.git``
 
 ``cd checkpoints-electrum``
 
