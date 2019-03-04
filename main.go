@@ -13,6 +13,7 @@ import (
 	"math/big"
 	"os"
 	"strconv"
+	"time"
 )
 
 const MINERCONFIRMATIONWINDOW uint64 = 2016
@@ -153,9 +154,10 @@ func ShowProgress(newestBlock uint64, currentBlock uint64) {
 
 func main() {
 
+	start := time.Now()
+
 	newestBlockResp, _ := client().GetBlockCount()
 	newestBlock := uint64(newestBlockResp)
-	fmt.Println(newestBlock)
 
 	var list CheckpointList
 
@@ -171,12 +173,13 @@ func main() {
 		}
 
 		list = append(list, NewCheckpoint(block.Hash, CompactToBig(block.Bits), block.Time))
-		writeCheckpointsFile(list)
 		ShowProgress(newestBlock, i)
-
 	}
 
-	fmt.Printf("Finished !\n checkpoints.json has been saved !\n")
+	writeCheckpointsFile(list)
+
+	fmt.Printf("checkpoints.json has been saved !\n")
+	log.Printf("Writing checkpoints took %s", time.Since(start))
 
 	defer client().Shutdown()
 }
